@@ -1,0 +1,104 @@
+---
+title: "Statistical Inference Course Project"
+author: "Felix G Lopez"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 3,
+                      fig.height = 2)
+```
+
+#### Note: 
+I integrated the analysis, code, and graphs directly into the main text, rather than placing them in an appendix.
+
+## Introduction
+
+In this project, I investigate the exponential distribution and compare it with the Central Limit Theorem (CLT). An exponential distribution describes the time between events in a Poisson process, dealing with continuous variables and being positively skewed to the right. I will set lambda to 0.2 for all simulations. I will examine the distribution of averages of 40 exponential over a thousand simulations. In the second part, I analyze the effect of different doses of vitamin C and two supplements on tooth growth.
+
+## Simulation
+
+```{r, include=FALSE}
+set.seed(123)
+lambda <- 0.2
+n <- 40
+simulations <- 1000
+```
+
+### Simulating Exponential Distribution
+
+Now I calculate  the means of 40 exponentials for each of the 1000 simulations.
+
+```{r}
+# Simulate 1000 averages of 40 exponentials
+simulated_means <- replicate(simulations, mean(rexp(n, lambda)))
+
+# Theoretical mean and standard deviation
+theoretical_mean <- 1 / lambda
+theoretical_sd <- 1 / lambda / sqrt(n)
+
+# Sample mean and standard deviation
+sample_mean <- mean(simulated_means)
+sample_sd <- sd(simulated_means)
+```
+
+
+Here are the results of the theoretical and sample statistics (mean and standard deviations). 
+
+```{r, results}
+# Results
+
+sample_mean
+theoretical_mean
+sample_sd
+theoretical_sd
+```
+
+
+#### Comparing Sample Mean to Theoretical Mean
+
+The sample mean of the simulated data is `r sample_mean`, while the theoretical mean is `r theoretical_mean`. As we can see, the sample mean is very close to the theoretical mean. The same happens with the standard deviation. The theoretical SD is `r theoretical_sd`and the sample SD is `r sample_sd`. Very close. This is expected due to the Law of Large Numbers. The Law states that as the number of trials of a random experiment increases, the average of the results obtained from those trials will converge to the expected value. It means that the more times you repeat an experiment, the closer the average of the outcomes will be to the theoretical probability or expected value.
+
+
+
+### Comparing Sample Variance to Theoretical Variance
+
+The theoretical variance of the mean of 40 exponentials is $( \frac{(\frac{1}{\lambda})^2}{n})$.
+
+
+```{r, theoretical variance}
+# Calculating the theoretical variance of a distribution (lambda is the parameter 
+#and n is the sample size).
+# The formula computes the variance base on these parameters.
+theoretical_variance <- (1 / lambda)^2 / n
+
+#This line calculates the sample variance of the simulated_means data. 
+#Var is a function that computes the variance of the given data. 
+sample_variance <- var(simulated_means)
+
+#Cat is a function that concatenates and print the values. 
+
+cat("Theoretical Variance:", theoretical_variance, "\n")
+cat("Sample Variance:", sample_variance, "\n")
+``` 
+Again, we would expect a sample variance close to the theoretical variance. In fact, the sample variance is `r sample_variance` and the theoretical variance is `r theoretical_variance`. 
+
+
+### Approximate Normality
+
+The histogram of the sample means (below) resembles a normal distribution, demonstrating the Central Limit Theorem. The red curve in the histogram represents the normal distribution with the same mean and variance. The histogram of these 1000 sample means looks more Gaussian because, according to the CLT, the distribution of the sample means will tend to be normal, even if the original data is not. The more samples we take and the larger the size of each sample, the closer the distribution of the sample means will be to a normal distribution.
+
+```{r}
+library(ggplot2)
+
+# Combine histogram and normal distribution
+ggplot(data.frame(x=simulated_means), aes(x=x)) +
+  geom_histogram(aes(y=after_stat(density)), bins=30, fill="darkblue", alpha=0.5) +
+  stat_function(fun=dnorm, args=list(mean=mean(simulated_means), sd=sd(simulated_means)), 
+                color="darkred", linewidth=0.5) +
+  labs(title="Distribution of Sample Means", x="Sample Means", y="Density")
+```
+

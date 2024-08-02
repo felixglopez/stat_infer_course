@@ -1,0 +1,95 @@
+---
+title: "Statistical Inference Course Project - part 2"
+author: "Felix G Lopez"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width = 3,
+                      fig.height = 2)
+```
+
+
+
+## Part 2: Basic Inferential Data Analysis Instructions
+
+This dataset involves the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods: orange juice or ascorbic acid (coded as VC). In this part, I analyze this dataset to understand the effect of dose and supplements on tooth growth.(Source: help file of the dataset)
+
+
+Loading and providing a basic summary of the dataset. 
+
+```{r}
+library(ggplot2)
+library(datasets)
+data("ToothGrowth")
+str(ToothGrowth)
+head(ToothGrowth)
+summary(ToothGrowth)
+```
+
+Using boxplots to check tooth growth as a function of dose.
+
+```{r}
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+ggplot(aes(x=dose, y=len), data=ToothGrowth) + geom_boxplot(aes(fill=dose))
+```
+
+
+It seems dose has a strong effect in tooth growth. Let's, then, use confidence intervals and hypothesis test to compare tooth growth by dose. To do so I will subset doses in three groups.
+
+```{r}
+#Create three sub-groups per dose level pairs in order to check for group differences.
+ToothGrowth.doses_0.5_1.0 <- subset(ToothGrowth, dose %in% c(0.5, 1.0))
+ToothGrowth.doses_0.5_2.0 <- subset(ToothGrowth, dose %in% c(0.5, 2.0))
+ToothGrowth.doses_1.0_2.0 <- subset(ToothGrowth, dose %in% c(1.0, 2.0))
+```
+Check for group differences due to different dose levels of (0.5, 1.0). Assume unequal variances between the two groups.
+
+```{r}
+t.test(len ~ dose, data = ToothGrowth.doses_0.5_1.0)
+
+```
+
+
+Check for group differences due to different dose levels of (0.5, 2.0). Assume unequal variances between the two groups.
+
+```{r}
+ttest1 <- t.test(len ~ dose, data = ToothGrowth.doses_0.5_2.0)
+print(ttest1, options=999)
+```
+
+
+
+Check for group differences due to different dose levels of (1.0, 2.0). Assume unequal variances between the two groups.
+
+```{r}
+t.test(len ~ dose, data = ToothGrowth.doses_1.0_2.0)
+```
+
+For all three t-tests, the p-values are significantly less than 0.05, and the confidence intervals do not include zero. Therefore, we reject the null hypothesis and conclude that increasing the dose level results in greater tooth length.
+
+Now lets see tooth growth as a function of supplement type. 
+
+```{r}
+ggplot(aes(x=supp, y=len), data=ToothGrowth) + geom_boxplot(aes(fill=supp))
+```
+
+
+Using confidence intervals and hypothesis test to compare the effect of supp on length. Assume unequal variances between the two groups.
+
+```{r}
+t.test(len ~ supp, data = ToothGrowth)
+```
+As we see above, that the p-value is equal to 0.06 and the confidence interval contains zero. Thus, we fail to reject the null hypothesis that the different supplement types have no effect on tooth length.
+
+
+## Stating my conclusions, based on my assumptions
+
+Supplement type has no effect on tooth growth. Increasing the dose level leads to increased tooth growth.
+The experiment involved randomly assigning guinea pigs to different dose levels and supplement types to control for potential confounding variables that could influence the results. The 60 guinea pigs in the sample are considered representative of the entire population of guinea pigs, allowing for the generalization of the findings. For the t-tests, it is assumed that the variances of the two groups being compared are different. This assumption is less strict than assuming equal variances between the groups.
+
+Thank you!
+
